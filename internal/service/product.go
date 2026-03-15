@@ -1,11 +1,11 @@
 package service
 
 import (
+	"comparison/pkg"
 	"context"
 	"log"
 
 	"comparison/internal/models"
-	utils "comparison/internal/pkg"
 	"comparison/internal/trace"
 )
 
