@@ -41,9 +41,8 @@ Campos podem ser **top-level** do `Product` (ex: `price`, `size`) ou **dinâmico
     - `handler`: valida query params, cria timeout (3s) e retorna HTTP status codes
     - `service`: regra de negócio da comparação e construção do payload
     - `repository`: busca por IDs, rastreia `notFound` e `duplicated`
-    - `models`: definição do `Product` e defaults (`GetProductDefaultFields`)
 - **Trace/Logs**: header `X-Trace-Id` é propagado e usado em logs.
-- **Interfaces**: Utilizada para abstrair a dependência que cada camada tem uma da outra
+- **Interfaces**: Utilizada para desacoplar as camadas e deixar as dependências explícitas 
 
 ## TODOs (anotações)
 - Docker / docker-compose
