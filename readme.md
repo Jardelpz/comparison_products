@@ -37,13 +37,33 @@ Campos podem ser **top-level** do `Product` (ex: `price`, `size`) ou **dinâmico
 
 - **Gin** como framework HTTP.
 - **Carregamento em memória**: a base de dados é via arquivo JSON que é lido na inicialização e mantido em memória.
-- **Camadas**:
-    - `handler`: valida query params, cria timeout (3s) e retorna HTTP status codes
-    - `service`: regra de negócio da comparação e construção do payload
-    - `repository`: busca por IDs, rastreia `notFound` e `duplicated`
+
+**Camadas**:
+
+**handler**
+- validar parâmetros da requisição
+- aplicar timeout de requisição (3s)
+- retornar códigos HTTP adequados
+
+### service
+- implementar a lógica de comparação
+- construir o payload de resposta
+- aplicar regras de negócio
+
+### repository
+- buscar produtos pelos IDs
+- identificar produtos `notFound`
+- identificar IDs duplicados
+
+### models
+- definição da struct `Product`
+- campos padrão de comparação (`GetProductDefaultFields`)
 - **Trace/Logs**: header `X-Trace-Id` é propagado e usado em logs.
 - **Interfaces**: Utilizada para desacoplar as camadas e deixar as dependências explícitas 
 
-## TODOs (anotações)
-- Docker / docker-compose
-- utilização de redis
+## TODOs
+- Docker / docker-compose para facilitar execução
+- cache em Redis para grandes volumes de produtos
+- paginação de resultados
+- métricas e observabilidade
+- validação mais robusta de campos solicitados
