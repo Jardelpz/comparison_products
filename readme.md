@@ -37,29 +37,30 @@ Campos podem ser **top-level** do `Product` (ex: `price`, `size`) ou **dinâmico
 
 - **Gin** como framework HTTP.
 - **Carregamento em memória**: a base de dados é via arquivo JSON que é lido na inicialização e mantido em memória.
+- **Trace/Logs**: header `X-Trace-Id` é propagado e usado em logs.
+- **Interfaces**: Utilizada para desacoplar as camadas e deixar as dependências explícitas
 
-**Camadas**:
+### **Camadas**:
 
-**handler**
+- ### handler
 - validar parâmetros da requisição
 - aplicar timeout de requisição (3s)
 - retornar códigos HTTP adequados
 
-### service
+- ### service
 - implementar a lógica de comparação
 - construir o payload de resposta
 - aplicar regras de negócio
 
-### repository
+- ### repository
 - buscar produtos pelos IDs
 - identificar produtos `notFound`
 - identificar IDs duplicados
 
-### models
+- ### models
 - definição da struct `Product`
 - campos padrão de comparação (`GetProductDefaultFields`)
-- **Trace/Logs**: header `X-Trace-Id` é propagado e usado em logs.
-- **Interfaces**: Utilizada para desacoplar as camadas e deixar as dependências explícitas 
+
 
 ## TODOs
 - Docker / docker-compose para facilitar execução
