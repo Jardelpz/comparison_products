@@ -17,6 +17,13 @@ type Product struct {
 	Specs       map[string]any `json:"specs"`
 }
 
+// avoid circular import
+type FindProductResult struct {
+	Found      []Product
+	NotFound   []string
+	Duplicated []string
+}
+
 func GetProductDefaultFields() []string {
 	t := reflect.TypeOf(Product{})
 

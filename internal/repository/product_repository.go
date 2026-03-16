@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"comparison/internal/domain"
 	"comparison/internal/models"
 	"comparison/internal/trace"
 	"context"
@@ -21,7 +20,7 @@ func NewProductRepository(products []models.Product) *ProductRepository {
 	return &ProductRepository{products: productsByID}
 }
 
-func (r *ProductRepository) FindProductsByIDs(ctx context.Context, ids []string) (domain.FindProductResult, error) {
+func (r *ProductRepository) FindProductsByIDs(ctx context.Context, ids []string) (models.FindProductResult, error) {
 	traceID, _ := trace.TraceIDFromContext(ctx)
 	log.Printf("finding products by id: trace_id=%s ids=%v", traceID, ids)
 
@@ -46,7 +45,7 @@ func (r *ProductRepository) FindProductsByIDs(ctx context.Context, ids []string)
 	}
 
 	log.Printf("found=%v, notFound=%v, duplicated=%v, trace_id=%s", len(found), len(notFound), len(duplicated), traceID)
-	return domain.FindProductResult{
+	return models.FindProductResult{
 		Found:      found,
 		NotFound:   notFound,
 		Duplicated: duplicated,

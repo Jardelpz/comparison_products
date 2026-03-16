@@ -1,54 +1,61 @@
 package repository
 
 import (
-	"comparison/internal/domain"
-	"comparison/internal/models"
-	"comparison/internal/trace"
 	"context"
-	"log"
+	"testing"
+
+	"comparison/internal/models"
+
+	"github.com/stretchr/testify/require"
 )
 
-type ProductRepository struct {
-	products map[string]models.Product
-}
-
-func NewProductRepository(products []models.Product) *ProductRepository {
-	// prepare key, value for indexing found and not found products
-	productsByID := make(map[string]models.Product, len(products)) // {1:produto, 2 produto... 10}
-	for _, p := range products {
-		productsByID[p.ID] = p
-	}
-	return &ProductRepository{products: productsByID}
-}
-
-func (r *ProductRepository) FindProductsByIDs(ctx context.Context, ids []string) (domain.FindProductResult, error) {
-	traceID, _ := trace.TraceIDFromContext(ctx)
-	log.Printf("finding products by id: trace_id=%s ids=%v", traceID, ids)
-
-	found := make([]models.Product, 0, len(ids))
-	notFound := make([]string, 0)
-	duplicated := make([]string, 0)
-	// set in go
-	seen := make(map[string]struct{})
-
-	for _, id := range ids {
-		if _, ok := seen[id]; ok {
-			duplicated = append(duplicated, id)
-			continue
-		}
-		seen[id] = struct{}{}
-		p, ok := r.products[id]
-		if ok {
-			found = append(found, p)
-			continue
-		}
-		notFound = append(notFound, id)
+func TestNewProductRepository_IndexesByID(t *testing.T) {
+	products := []models.Product{
+		{ID: "1", Name: "A"},
+		{ID: "2", Name: "B"},
 	}
 
-	log.Printf("found=%v, notFound=%v, duplicated=%v, trace_id=%s", len(found), len(notFound), len(duplicated), traceID)
-	return domain.FindProductResult{
-		Found:      found,
-		NotFound:   notFound,
-		Duplicated: duplicated,
-	}, nil
+	repo := NewProductRepository(products)
+	require.NotNil(t, repo)
+	require.Len(t, repo.products, 2)
+	require.Equal(t, "A", repo.products["1"].Name)
+	require.Equal(t, "B", repo.products["2"].Name)
+}
+
+func TestFindProductsByIDs_SomeNotFound_TracksNotFoundInOrder(t *testing.T) {
+	repo := NewProductRepository([]models.Product{
+		{ID: "1", Name: "P1"},
+		{ID: "3", Name: "P3"},
+	})
+
+	res, err := repo.FindProductsByIDs(context.Background(), []string{"1", "2", "3", "999"})
+	require.NoError(t, err)
+
+	require.Len(t, res.Found, 2)
+	require.Equal(t, []string{"1", "3"}, []string{res.Found[0].ID, res.Found[1].ID})
+	require.Equal(t, []string{"2", "999"}, res.NotFound)
+}
+
+func TestFindProductsByIDs_DuplicateIDs_TracksDuplicates(t *testing.T) {
+	repo := NewProductRepository([]models.Product{
+		{ID: "1", Name: "P1"},
+	})
+
+	res, err := repo.FindProductsByIDs(context.Background(), []string{"1", "1", "x"})
+	require.NoError(t, err)
+
+	// repo agora deduplica durante a busca
+	require.Len(t, res.Found, 1)
+	require.Equal(t, []string{"1"}, []string{res.Found[0].ID})
+	require.Equal(t, []string{"x"}, res.NotFound)
+	require.Equal(t, []string{"1"}, res.Duplicated)
+}
+
+func TestFindProductsByIDs_EmptyInput(t *testing.T) {
+	repo := NewProductRepository([]models.Product{{ID: "1", Name: "P1"}})
+
+	res, err := repo.FindProductsByIDs(context.Background(), []string{})
+	require.NoError(t, err)
+	require.Empty(t, res.Found)
+	require.Empty(t, res.NotFound)
 }
